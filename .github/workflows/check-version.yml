@@ -3,8 +3,8 @@ name: Check The Dude version
 on:
   workflow_dispatch:
     inputs:
-      force_download_test:
-        description: 'Force installer download test'
+      force_update_test:
+        description: 'Force full update dry-run test'
         required: false
         type: boolean
         default: false
@@ -56,7 +56,8 @@ jobs:
           fi
 
       - name: Download The Dude installer and calculate SHA256
-        if: steps.version.outputs.update_available == 'true' || inputs.force_download_test == true
+        id: installer
+        if: steps.version.outputs.update_available == 'true' || inputs.force_update_test == true
         shell: bash
         env:
           VERSION: ${{ steps.version.outputs.latest_version }}
@@ -74,3 +75,86 @@ jobs:
           echo "Downloaded file: $FILE"
           echo "File size: $(stat -c%s "$FILE") bytes"
           echo "SHA256: $SHA256"
+
+          echo "sha256=$SHA256" >> "$GITHUB_OUTPUT"
+
+      - name: Update PKGBUILD
+        if: steps.version.outputs.update_available == 'true' || inputs.force_update_test == true
+        shell: bash
+        env:
+          VERSION: ${{ steps.version.outputs.latest_version }}
+          SHA256: ${{ steps.installer.outputs.sha256 }}
+        run: |
+          set -euo pipefail
+
+          python3 <<'PY'
+          import os
+          import re
+          from pathlib import Path
+
+          version = os.environ["VERSION"]
+          sha256 = os.environ["SHA256"]
+
+          path = Path("PKGBUILD")
+          content = path.read_text()
+
+          content, version_changes = re.subn(
+              r"^pkgver=.*$",
+              f"pkgver={version}",
+              content,
+              count=1,
+              flags=re.MULTILINE,
+          )
+
+          content, checksum_changes = re.subn(
+              r"^(sha256sums=\(')[0-9a-fA-F]+(')",
+              rf"\g<1>{sha256}\2",
+              content,
+              count=1,
+              flags=re.MULTILINE,
+          )
+
+          if version_changes != 1:
+              raise SystemExit("Could not update pkgver in PKGBUILD")
+
+          if checksum_changes != 1:
+              raise SystemExit("Could not update first SHA256 checksum in PKGBUILD")
+
+          path.write_text(content)
+          PY
+
+          echo "Updated PKGBUILD:"
+          grep -E '^pkgver=|^sha256sums' PKGBUILD
+
+      - name: Regenerate .SRCINFO
+        if: steps.version.outputs.update_available == 'true' || inputs.force_update_test == true
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          docker run --rm \
+            -v "$PWD:/src:ro" \
+            archlinux:base-devel \
+            bash -lc '
+              useradd -m builder
+              cp -a /src /tmp/pkg
+              chown -R builder:builder /tmp/pkg
+              su builder -c "cd /tmp/pkg && makepkg --printsrcinfo"
+            ' > .SRCINFO
+
+          echo "Generated .SRCINFO:"
+          cat .SRCINFO
+
+      - name: Show changes
+        if: steps.version.outputs.update_available == 'true' || inputs.force_update_test == true
+        shell: bash
+        run: |
+          git diff -- PKGBUILD .SRCINFO
+
+          if git diff --quiet -- PKGBUILD .SRCINFO; then
+            echo "No file changes detected."
+            echo "This is expected during a forced test when the repository is already up to date."
+          else
+            echo "Package files were updated successfully."
+          fi
+
