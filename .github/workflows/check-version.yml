@@ -14,7 +14,8 @@ on:
       timezone: 'Europe/Vilnius'
 
 permissions:
-  contents: read
+  contents: write
+  pull-requests: write
 
 jobs:
   check-version:
@@ -181,5 +182,24 @@ jobs:
             echo "Package files were updated successfully."
           fi
 
+      - name: Create update pull request
+        if: steps.version.outputs.update_available == 'true'
+        uses: peter-evans/create-pull-request@v8
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          add-paths: |
+            PKGBUILD
+            .SRCINFO
+          commit-message: Update The Dude to ${{ steps.version.outputs.latest_version }}
+          branch: automation/update-thedude-${{ steps.version.outputs.latest_version }}
+          delete-branch: true
+          title: Update The Dude ${{ steps.version.outputs.current_version }} → ${{ steps.version.outputs.latest_version }}
+          body: |
+            Automated MikroTik The Dude package update.
 
-
+            - Previous version: `${{ steps.version.outputs.current_version }}`
+            - New version: `${{ steps.version.outputs.latest_version }}`
+            - PKGBUILD updated
+            - SHA256 checksum updated
+            - `.SRCINFO` regenerated
+            - Package build completed successfully
