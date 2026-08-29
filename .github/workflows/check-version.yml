@@ -145,6 +145,29 @@ jobs:
           echo "Generated .SRCINFO:"
           cat .SRCINFO
 
+      - name: Test package build
+        if: steps.version.outputs.update_available == 'true' || inputs.force_update_test == true
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          docker run --rm \
+            -v "$PWD:/src:ro" \
+            archlinux:base-devel \
+            bash -lc '
+              set -euo pipefail
+
+              pacman -Syu --noconfirm 7zip wine
+
+              useradd -m builder
+              cp -a /src /tmp/pkg
+              chown -R builder:builder /tmp/pkg
+
+              su builder -c "cd /tmp/pkg && makepkg -Csf --noconfirm"
+            '
+
+          echo "Package build completed successfully."
+
       - name: Show changes
         if: steps.version.outputs.update_available == 'true' || inputs.force_update_test == true
         shell: bash
@@ -157,4 +180,6 @@ jobs:
           else
             echo "Package files were updated successfully."
           fi
+
+
 
