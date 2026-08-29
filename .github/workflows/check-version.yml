@@ -9,6 +9,12 @@ on:
         type: boolean
         default: false
 
+      force_pr_test:
+        description: 'Create test pull request'
+        required: false
+        type: boolean
+        default: false
+
   schedule:
     - cron: '0 1 * * 1'
       timezone: 'Europe/Vilnius'
@@ -181,6 +187,27 @@ jobs:
           else
             echo "Package files were updated successfully."
           fi
+
+      - name: Prepare pull request test
+        if: inputs.force_pr_test == true
+        shell: bash
+        run: |
+          echo "Automated pull request test." > .github/pr-test.txt
+
+      - name: Create test pull request
+        if: inputs.force_pr_test == true
+        uses: peter-evans/create-pull-request@v8
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          add-paths: |
+            .github/pr-test.txt
+          commit-message: Test automated pull request
+          branch: automation/test-pull-request
+          delete-branch: true
+          title: Test automated pull request
+          body: |
+            Temporary pull request created to verify GitHub Actions PR automation.
+          draft: true
 
       - name: Create update pull request
         if: steps.version.outputs.update_available == 'true'
