@@ -1,0 +1,64 @@
+name: PR package check
+
+on:
+  pull_request:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-package:
+    name: Build package
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Verify SRCINFO
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          docker run --rm \
+            -v "$PWD:/src:ro" \
+            archlinux:base-devel \
+            bash -lc '
+              useradd -m builder
+              cp -a /src /tmp/pkg
+              chown -R builder:builder /tmp/pkg
+              su builder -c "cd /tmp/pkg && makepkg --printsrcinfo"
+            ' > /tmp/generated.SRCINFO
+
+          if ! diff -u .SRCINFO /tmp/generated.SRCINFO; then
+            echo "::error::.SRCINFO does not match PKGBUILD"
+            exit 1
+          fi
+
+          echo ".SRCINFO matches PKGBUILD."
+
+      - name: Test package build
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          docker run --rm \
+            -v "$PWD:/src:ro" \
+            archlinux:base-devel \
+            bash -lc '
+              set -euo pipefail
+
+              pacman -Syu --noconfirm 7zip wine
+
+              useradd -m builder
+              cp -a /src /tmp/pkg
+              chown -R builder:builder /tmp/pkg
+
+              su builder -c "cd /tmp/pkg && makepkg -Csf --noconfirm"
+            '
+
+          echo "Package build completed successfully."
