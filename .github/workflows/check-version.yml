@@ -2,6 +2,13 @@ name: Check The Dude version
 
 on:
   workflow_dispatch:
+    inputs:
+      force_download_test:
+        description: 'Force installer download test'
+        required: false
+        type: boolean
+        default: false
+
   schedule:
     - cron: '0 1 * * 1'
       timezone: 'Europe/Vilnius'
@@ -48,8 +55,8 @@ jobs:
             echo "::notice::New The Dude version available: $CURRENT_VERSION -> $LATEST_VERSION"
           fi
 
-      - name: Download new The Dude installer and calculate SHA256
-        if: steps.version.outputs.update_available == 'true'
+      - name: Download The Dude installer and calculate SHA256
+        if: steps.version.outputs.update_available == 'true' || inputs.force_download_test == true
         shell: bash
         env:
           VERSION: ${{ steps.version.outputs.latest_version }}
