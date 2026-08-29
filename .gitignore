@@ -10,7 +10,7 @@ src/
 
 # Downloaded MikroTik installer
 dude-install-*.exe
+thedude-*.exe
 
 # Logs
 *.log
-
