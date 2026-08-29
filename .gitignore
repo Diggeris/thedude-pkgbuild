@@ -1,0 +1,16 @@
+# makepkg build directories
+pkg/
+src/
+
+# Built Arch packages
+*.pkg.tar.*
+
+# Source packages
+*.src.tar.*
+
+# Downloaded MikroTik installer
+dude-install-*.exe
+
+# Logs
+*.log
+
