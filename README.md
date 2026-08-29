@@ -1,6 +1,6 @@
 # MikroTik The Dude PKGBUILD
 
-Up-to-date PKGBUILD for MikroTik The Dude on Arch Linux and Manjaro.
+Up-to-date PKGBUILD for MikroTik The Dude on Arch Linux.
 
 This repository is intended to track current MikroTik The Dude releases and provide an easy way to build and install The Dude using `makepkg`.
 
