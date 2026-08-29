@@ -14,6 +14,7 @@ on:
       timezone: 'Europe/Vilnius'
 
 permissions:
+  actions: write
   contents: write
   pull-requests: write
 
@@ -183,6 +184,7 @@ jobs:
           fi
 
       - name: Create update pull request
+        id: cpr
         if: steps.version.outputs.update_available == 'true' && inputs.force_update_test != true
         uses: peter-evans/create-pull-request@v8
         with:
@@ -203,3 +205,15 @@ jobs:
             - SHA256 checksum updated
             - `.SRCINFO` regenerated
             - Package build completed successfully
+
+      - name: Run PR package check
+        if: steps.cpr.outputs.pull-request-number
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_BRANCH: ${{ steps.cpr.outputs.pull-request-branch }}
+        run: |
+          set -euo pipefail
+
+          echo "Triggering PR package check on branch: $PR_BRANCH"
+          gh workflow run pr-build.yml --ref "$PR_BRANCH"
