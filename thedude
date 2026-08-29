@@ -1,20 +1,25 @@
 #!/bin/bash
-export WINEPREFIX="$HOME"/.winbox/wine
-export WINEARCH=win64
-export WINEDLLOVERRIDES="mscoree=;winegstreamer=" # disable mono
+
+export WINEPREFIX="$HOME/.winbox/wine"
+export WINEDLLOVERRIDES="mscoree=;winegstreamer="
 export WINEDEBUG=-all
-if [ ! -d "$HOME"/.winbox/wine ] ; then
-   mkdir -p "$HOME"/.winbox/wine
-   wineboot -u
-fi
-if [ ! -d "$HOME"/.winbox/dude ] ; then
-   mkdir -p "$HOME"/.winbox/dude
-fi
-find /usr/share/thedude -type f -exec ln -sf {} $HOME/.winbox/dude \;
-if [ -h "$HOME"/.winbox/dude/data ] ; then
-  rm -f "$HOME"/.winbox/dude/data
+
+DUDE_HOME="$HOME/.winbox/dude"
+
+if [ ! -d "$WINEPREFIX" ]; then
+    mkdir -p "$WINEPREFIX"
+    wineboot -u
 fi
 
-cd $HOME/.winbox/dude
-wine $HOME/.winbox/dude/dude.exe "$@"
+if [ ! -d "$DUDE_HOME" ]; then
+    mkdir -p "$DUDE_HOME"
+fi
 
+find /usr/share/thedude -type f -exec ln -sf {} "$DUDE_HOME/" \;
+
+if [ -h "$DUDE_HOME/data" ]; then
+    rm -f "$DUDE_HOME/data"
+fi
+
+cd "$DUDE_HOME" || exit 1
+exec wine "$DUDE_HOME/dude.exe" "$@"
