@@ -18,6 +18,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Check latest MikroTik stable version
+        id: version
         shell: bash
         run: |
           set -euo pipefail
@@ -36,8 +37,33 @@ jobs:
           echo "Current PKGBUILD version: $CURRENT_VERSION"
           echo "Latest MikroTik version:   $LATEST_VERSION"
 
+          echo "current_version=$CURRENT_VERSION" >> "$GITHUB_OUTPUT"
+          echo "latest_version=$LATEST_VERSION" >> "$GITHUB_OUTPUT"
+
           if [ "$CURRENT_VERSION" = "$LATEST_VERSION" ]; then
+            echo "update_available=false" >> "$GITHUB_OUTPUT"
             echo "The Dude PKGBUILD is up to date."
           else
+            echo "update_available=true" >> "$GITHUB_OUTPUT"
             echo "::notice::New The Dude version available: $CURRENT_VERSION -> $LATEST_VERSION"
           fi
+
+      - name: Download new The Dude installer and calculate SHA256
+        if: steps.version.outputs.update_available == 'true'
+        shell: bash
+        env:
+          VERSION: ${{ steps.version.outputs.latest_version }}
+        run: |
+          set -euo pipefail
+
+          URL="https://download.mikrotik.com/routeros/${VERSION}/dude-install-${VERSION}.exe"
+          FILE="dude-install-${VERSION}.exe"
+
+          echo "Downloading: $URL"
+          curl -fL "$URL" -o "$FILE"
+
+          SHA256=$(sha256sum "$FILE" | awk '{print $1}')
+
+          echo "Downloaded file: $FILE"
+          echo "File size: $(stat -c%s "$FILE") bytes"
+          echo "SHA256: $SHA256"
