@@ -2,6 +2,9 @@
 <!-- SPDX-License-Identifier: 0BSD -->
 # MikroTik The Dude PKGBUILD
 
+[![PR package check](https://github.com/Diggeris/thedude-pkgbuild/actions/workflows/pr-build.yml/badge.svg)](https://github.com/Diggeris/thedude-pkgbuild/actions/workflows/pr-build.yml)
+[![Version check](https://github.com/Diggeris/thedude-pkgbuild/actions/workflows/check-version.yml/badge.svg)](https://github.com/Diggeris/thedude-pkgbuild/actions/workflows/check-version.yml)
+
 Up-to-date PKGBUILD for MikroTik The Dude on Arch Linux.
 
 This repository provides an unofficial Arch Linux package for MikroTik The Dude and automatically tracks new MikroTik releases that include an updated The Dude build.
@@ -20,6 +23,10 @@ Build and install the package:
 ```bash
 makepkg -si
 ```
+
+## Tested on
+
+The package is tested automatically in an Arch Linux environment and has also been manually tested on Manjaro Linux.
 
 ## Automatic updates
 
