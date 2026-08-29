@@ -2,6 +2,9 @@ name: Check The Dude version
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '0 1 * * 1'
+      timezone: 'Europe/Vilnius'
 
 permissions:
   contents: read
