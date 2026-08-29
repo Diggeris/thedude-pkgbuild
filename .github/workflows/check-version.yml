@@ -1,0 +1,40 @@
+name: Check The Dude version
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Check latest MikroTik stable version
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          CURRENT_VERSION=$(grep '^pkgver=' PKGBUILD | cut -d= -f2)
+
+          LATEST_VERSION=$(curl -fsSL \
+            https://upgrade.mikrotik.com/routeros/NEWESTa7.stable \
+            | awk '{print $1}')
+
+          if [ -z "$LATEST_VERSION" ]; then
+            echo "::error::Could not determine latest MikroTik version"
+            exit 1
+          fi
+
+          echo "Current PKGBUILD version: $CURRENT_VERSION"
+          echo "Latest MikroTik version:   $LATEST_VERSION"
+
+          if [ "$CURRENT_VERSION" = "$LATEST_VERSION" ]; then
+            echo "The Dude PKGBUILD is up to date."
+          else
+            echo "::notice::New The Dude version available: $CURRENT_VERSION -> $LATEST_VERSION"
+          fi
