@@ -3,22 +3,21 @@
 pkgname=thedude
 pkgver=7.24.1
 pkgrel=1
-pkgdesc="Mikrotik The Dude network monitoring client"
-url="http://www.mikrotik.com"
-arch=('x86_64' 'i686')
+pkgdesc="MikroTik The Dude network monitoring client"
+url="https://mikrotik.com"
+arch=('x86_64')
 license=('custom')
 makedepends=('p7zip')
 depends=('findutils' 'wine')
 optdepends=(
   'ttf-ms-fonts: for better fonts'
 )
-install=${pkgname}.install
 source=("${pkgname}-${pkgver}.exe::https://download.mikrotik.com/routeros/${pkgver}/dude-install-${pkgver}.exe"
         "${pkgname}.desktop"
         "${pkgname}.png"
         "${pkgname}")
 sha256sums=('28c37a9e22d8efcdef7f34045b72a7cf3db66273bd884418e14e5b95bc0fd957'
-            '037f296da60fa1e46f256f0b8314b4de467529dcbfe743b512bb29730ac05a18'
+            '53d1fa8fa8cd676572c6c7ec9daa6ad7ea7d1ff4f35b2e557d64d47d7622e602'
             'b2595e2c2c9980fd5a9b2a6bbd847a8cbb158a4c18e36e9002ccbec109b4eaa1'
             '08a7b0b10a034c6cbfbbd3a5d2b7e12c2ab2d7014563a39de9596f29f5a5961c')
 
