@@ -1,8 +1,10 @@
+<!-- SPDX-FileCopyrightText: 2026 Diggeris -->
+<!-- SPDX-License-Identifier: 0BSD -->
 # MikroTik The Dude PKGBUILD
 
 Up-to-date PKGBUILD for MikroTik The Dude on Arch Linux.
 
-This repository provides an unofficial Arch Linux package for MikroTik The Dude and automatically tracks new MikroTik stable releases.
+This repository provides an unofficial Arch Linux package for MikroTik The Dude and automatically tracks new MikroTik releases that include an updated The Dude build.
 
 ## Installation
 
@@ -61,3 +63,9 @@ This is an unofficial community project and is not affiliated with or endorsed b
 MikroTik and The Dude are trademarks and/or products of MikroTik.
 
 This repository does not redistribute the MikroTik The Dude installer. The installer is downloaded directly from MikroTik during the package build process.
+
+## License
+
+Documentation and GitHub Actions automation created for this repository are licensed under the BSD Zero Clause License (`0BSD`).
+
+Files derived from the original AUR `thedude` package are not relicensed by this repository and retain their original authorship and applicable terms.

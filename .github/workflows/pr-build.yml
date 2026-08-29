@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Diggeris
+# SPDX-License-Identifier: 0BSD
 name: PR package check
 
 on:
