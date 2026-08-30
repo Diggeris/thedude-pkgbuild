@@ -1,11 +1,11 @@
 pkgbase = thedude
 	pkgdesc = MikroTik The Dude network monitoring client
 	pkgver = 7.24.1
-	pkgrel = 1
+	pkgrel = 2
 	url = https://mikrotik.com
 	arch = x86_64
 	license = custom
-	makedepends = p7zip
+	makedepends = 7zip
 	depends = findutils
 	depends = wine
 	optdepends = ttf-ms-fonts: for better fonts
