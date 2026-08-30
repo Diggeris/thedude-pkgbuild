@@ -88,6 +88,7 @@ jobs:
         env:
           VERSION: ${{ steps.version.outputs.latest_version }}
           SHA256: ${{ steps.installer.outputs.sha256 }}
+          UPDATE_AVAILABLE: ${{ steps.version.outputs.update_available }}
         run: |
           set -euo pipefail
 
@@ -98,6 +99,7 @@ jobs:
 
           version = os.environ["VERSION"]
           sha256 = os.environ["SHA256"]
+          update_available = os.environ["UPDATE_AVAILABLE"] == "true"
 
           path = Path("PKGBUILD")
           content = path.read_text()
@@ -110,6 +112,21 @@ jobs:
               flags=re.MULTILINE,
           )
 
+          if version_changes != 1:
+              raise SystemExit("Could not update pkgver in PKGBUILD")
+
+          if update_available:
+              content, pkgrel_changes = re.subn(
+                  r"^pkgrel=.*$",
+                  "pkgrel=1",
+                  content,
+                  count=1,
+                  flags=re.MULTILINE,
+              )
+
+              if pkgrel_changes != 1:
+                  raise SystemExit("Could not reset pkgrel in PKGBUILD")
+
           content, checksum_changes = re.subn(
               r"^(sha256sums=\(')[0-9a-fA-F]+(')",
               rf"\g<1>{sha256}\2",
@@ -118,9 +135,6 @@ jobs:
               flags=re.MULTILINE,
           )
 
-          if version_changes != 1:
-              raise SystemExit("Could not update pkgver in PKGBUILD")
-
           if checksum_changes != 1:
               raise SystemExit("Could not update first SHA256 checksum in PKGBUILD")
 
@@ -128,7 +142,7 @@ jobs:
           PY
 
           echo "Updated PKGBUILD:"
-          grep -E '^pkgver=|^sha256sums' PKGBUILD
+          grep -E '^pkgver=|^pkgrel=|^sha256sums' PKGBUILD
 
       - name: Regenerate .SRCINFO
         if: steps.version.outputs.update_available == 'true' || inputs.force_update_test == true
@@ -204,6 +218,7 @@ jobs:
             - Previous version: `${{ steps.version.outputs.current_version }}`
             - New version: `${{ steps.version.outputs.latest_version }}`
             - PKGBUILD updated
+            - pkgrel reset to `1`
             - SHA256 checksum updated
             - `.SRCINFO` regenerated
             - Package build completed successfully
